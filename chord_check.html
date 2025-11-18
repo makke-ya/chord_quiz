@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>和音確認</title>
+  <link href="static/style.css" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/vue@3/dist/vue.global.prod.js"></script>
+  <script src="static/site.js"></script>
+</head>
+<body class="bg-gray-50 min-h-screen flex items-center justify-center">
+  <div id="app" class="w-full max-w-3xl p-6">
+    <div class="bg-white rounded-xl shadow p-6">
+      <h1 class="text-xl font-bold mb-4">わおん の かくにん</h1>
+      <p id="info" class="text-sm text-gray-600 mb-4"></p>
+
+  <div id="chords" class="grid grid-cols-4 gap-6 mb-4"></div>
+
+      <div class="flex gap-3">
+        <button id="startQuizBtn" class="btn-action px-6 py-3 bg-indigo-600 text-white rounded">スタート</button>
+        <a href="level_select.html" class="btn-action px-6 py-3 inline-block border rounded text-center bg-white">もどる</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (async function(){
+      const level = Number(localStorage.getItem('selectedLevel') || 1);
+      const instant = localStorage.getItem('instant') === '1';
+      document.getElementById('info').textContent = `れべる ${level} — ${instant ? 'すぐにこたえをみる' : 'あとでこたえをみる'}`;
+
+      const colorMap = {
+        red: 'あか', yellow: 'きいろ', blue: 'あお', black: 'くろ', green: 'みどり', orange: 'おれんじ', purple: 'むらさき', pink: 'ぴんく', brown: 'ちゃいろ', beige: 'べーじゅ', lavender: 'らべんだー', gray: 'ぐれー', lightblue: 'みずいろ', yellowgreen: 'きみどり'
+      };
+
+      const previewAudio = new Audio();
+      let playingBtn = null;
+
+      try{
+        const sounds = await Site.getSoundsForLevel(level);
+        const container = document.getElementById('chords');
+        if (!sounds.length) { container.textContent = '音ファイルがありません'; return; }
+
+        const iconMap = { red:'trumpet', yellow:'trumpet', blue:'guitar', black:'drum', green:'flute', orange:'xylophone', purple:'harp', pink:'sax', brown:'banjo', beige:'triangle', lavender:'maraca', gray:'piano', lightblue:'ukulele', yellowgreen:'ocarina' };
+
+        sounds.forEach((fname) => {
+          const parts = fname.split('_');
+          const raw = parts.length > 1 ? parts[1].split('.')[0] : fname;
+          const label = (colorMap[raw]) || raw;
+
+          const btn = document.createElement('button');
+          btn.className = 'flex flex-col items-center justify-center gap-2 btn-large rounded-lg shadow-lg focus:outline-none w-full';
+          btn.dataset.file = fname;
+
+          const swatch = document.createElement('div');
+          swatch.className = 'swatch';
+          swatch.style.borderRadius = '9999px';
+          swatch.style.boxShadow = '0 2px 6px rgba(0,0,0,0.12)';
+          swatch.style.display = 'flex';
+          swatch.style.alignItems = 'center';
+          swatch.style.justifyContent = 'center';
+          swatch.style.marginBottom = '4px';
+          let cssColor = '#f3f4f6';
+          if (raw && /^[a-z0-9]+$/.test(raw)){
+            cssColor = raw.toLowerCase();
+          }
+          swatch.style.background = cssColor;
+          swatch.style.border = '32px solid rgba(0,0,0,0.06)';
+
+          const lbl = document.createElement('div');
+          lbl.textContent = label;
+          lbl.className = 'text-xl font-bold';
+
+          btn.appendChild(swatch);
+          btn.appendChild(lbl);
+
+          btn.addEventListener('click', () => {
+            if (!previewAudio.paused) { previewAudio.pause(); previewAudio.currentTime = 0; }
+            if (playingBtn && playingBtn !== btn) { playingBtn.style.boxShadow = 'none'; }
+            previewAudio.src = `static/sounds/${fname}`;
+            previewAudio.play().catch(() => {});
+            playingBtn = btn;
+            btn.style.boxShadow = '0 0 12px rgba(0,0,0,0.18)';
+            previewAudio.onended = () => { if (playingBtn) { playingBtn.style.boxShadow = 'none'; playingBtn = null; } };
+          });
+
+          container.appendChild(btn);
+        });
+      }catch(e){ document.getElementById('chords').textContent = '音ファイルの取得に失敗しました'; }
+
+      document.getElementById('startQuizBtn').addEventListener('click', () => {
+        localStorage.setItem('instant', instant ? '1' : '0');
+        window.location.href = 'quiz.html';
+      });
+    })();
+  </script>
+</body>
+</html>
