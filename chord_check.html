@@ -34,6 +34,10 @@
         red: 'あか', yellow: 'きいろ', blue: 'あお', black: 'くろ', green: 'みどり', orange: 'おれんじ', purple: 'むらさき', pink: 'ぴんく', brown: 'ちゃいろ', beige: 'べーじゅ', lavender: 'らべんだー', gray: 'ぐれー', lightblue: 'みずいろ', yellowgreen: 'きみどり'
       };
 
+      const noteMap = {
+        red: 'ドミソ', yellow: 'ドファラ', blue: 'シレソ', black: 'ラドファ', green: 'レソシ', orange: 'ミソド', purple: 'ファラド', pink: 'ソシレ', brown: 'ソドミ', beige: 'レフィスラ', lavender: 'ミギスシ', gray: 'ベーレファ', lightblue: 'エスソベー', yellowgreen: 'ラチスミ'
+      };
+
       const previewAudio = new Audio();
       let playingBtn = null;
 
@@ -72,8 +76,13 @@
           lbl.textContent = label;
           lbl.className = 'text-xl font-bold';
 
+          const noteLbl = document.createElement('div');
+          noteLbl.textContent = noteMap[raw] || '';
+          noteLbl.className = 'text-sm text-gray-500';
+
           btn.appendChild(swatch);
           btn.appendChild(lbl);
+          btn.appendChild(noteLbl);
 
           btn.addEventListener('click', () => {
             if (!previewAudio.paused) { previewAudio.pause(); previewAudio.currentTime = 0; }

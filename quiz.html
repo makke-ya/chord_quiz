@@ -33,12 +33,20 @@ const audio = document.getElementById('audio');
 let answers = [];
 let answered = false;
 let currentSelection = null;
+let currentLevel = 1;
+
+const colorMap = { red:'あか', yellow:'きいろ', blue:'あお', black:'くろ', green:'みどり', orange:'おれんじ', purple:'むらさき', pink:'ぴんく', brown:'ちゃいろ', beige:'べーじゅ', lavender:'らべんだー', gray:'ぐれー', lightblue:'みずいろ', yellowgreen:'きみどり' };
+
+const noteMap = {
+  red: 'ドミソ', yellow: 'ドファラ', blue: 'シレソ', black: 'ラドファ', green: 'レソシ', orange: 'ミソド', purple: 'ファラド', pink: 'ソシレ', brown: 'ソドミ', beige: 'レフィスラ', lavender: 'ミギスシ', gray: 'ベーレファ', lightblue: 'エスソベー', yellowgreen: 'ラチスミ'
+};
 
 async function loadQuiz(level) {
+  currentLevel = level;
   quiz = await Site.generateQuiz(level);
   answers = [];
   const sounds = await Site.getSoundsForLevel(level);
-  renderChoiceButtons(sounds || []);
+  renderChoiceButtons(sounds || [], level);
   playQuestion();
 }
 
@@ -68,15 +76,15 @@ function playQuestion() {
   }).catch(e => console.log(e));
 }
 
-function renderChoiceButtons(sounds){
+function renderChoiceButtons(sounds, level){
   const container = document.getElementById('buttons');
   container.innerHTML = '';
   const colors = sounds.map(f => {
     const parts = f.split('_');
     return parts.length>1 ? parts[1].split('.')[0] : f;
   });
-  const unique = Array.from(new Set(colors)).slice(0,6);
-  const colorMap = { red:'あか', yellow:'きいろ', blue:'あお', black:'くろ', green:'みどり', orange:'おれんじ', purple:'むらさき', pink:'ぴんく', brown:'ちゃいろ', beige:'べーじゅ', lavender:'らべんだー', gray:'ぐれー', lightblue:'みずいろ', yellowgreen:'きみどり' };
+  // allow number of choices equal to number of sound files for the level
+  const unique = Array.from(new Set(colors)).slice(0, Math.max(6, sounds.length));
   unique.forEach((raw) => {
     const label = colorMap[raw] || raw;
     const btn = document.createElement('button');
@@ -96,6 +104,11 @@ function renderChoiceButtons(sounds){
     lbl.textContent = label;
     lbl.style.fontSize = '18px';
 
+    const noteLbl = document.createElement('div');
+    noteLbl.textContent = noteMap[raw] || '';
+    noteLbl.style.fontSize = '0.875rem';
+    noteLbl.style.color = '#9ca3af';
+
     let cssColor = '#f3f4f6';
     if (raw && /^[a-z0-9]+$/.test(raw)){
       cssColor = raw.toLowerCase();
@@ -105,6 +118,7 @@ function renderChoiceButtons(sounds){
 
     btn.appendChild(swatch);
     btn.appendChild(lbl);
+    btn.appendChild(noteLbl);
     btn.disabled = true;
     btn.style.opacity = '0.6';
     btn.addEventListener('click', (e) => {
