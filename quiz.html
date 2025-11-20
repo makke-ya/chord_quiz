@@ -124,7 +124,7 @@ function renderChoiceButtons(sounds, level){
       if (iconSet && iconSet !== 'none'){
         swatch.style.position = 'relative';
         swatch.style.overflow = 'visible';
-        swatch.style.border = '6px solid rgba(0,0,0,0.06)';
+        swatch.style.border = '6px solid rgba(0,0,0,0)';
         const img = document.createElement('img');
         const imgFile = (colorToFile[raw] || '').replace('.mp3', '.png');
         img.src = `static/images/${iconSet}/${imgFile}`;
